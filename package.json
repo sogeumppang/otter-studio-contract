@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "compile": "yarn hardhat compile"
+    "compile": "yarn hardhat compile",
+    "demo": "yarn hardhat run scripts/demo.js --network localhost",
+    "demo:cronos-test": "yarn hardhat run scripts/demo-cronos.js --network cronosTestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",

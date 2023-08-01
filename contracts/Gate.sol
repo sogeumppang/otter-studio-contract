@@ -108,7 +108,7 @@ contract Gate is Ownable, ERC1155Holder {
         votingEnabledForChapter[chapterId] = enabled;
     }
 
-    function stakeProducerPass(
+    function stakeProducerPassAndVote(
         uint256 chapterId,
         uint256 voteOptionId,
         uint256 amount

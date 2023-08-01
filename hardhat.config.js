@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+require("./tasks");
 
 module.exports = {
   networks: {
@@ -11,10 +12,9 @@ module.exports = {
       // accounts: [myPrivateKey],
     },
     cronosTestnet: {
-      url: "https://evm-t3.cronos.org/",
+      url: "https://evm-t3.cronos.org",
       chainId: 338,
-      // accounts: [myPrivateKey],
-      gasPrice: 5000000000000,
+      accounts: [],
     },
     cronos: {
       url: "https://evm.cronos.org/",
