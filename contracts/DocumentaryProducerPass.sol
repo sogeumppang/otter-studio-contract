@@ -25,7 +25,7 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
         uint256 amount
     );
 
-    address payable public maker;
+    address payable public director;
 
     // A mapping of the number of Producer Passes minted per chapterId per user
     // userPassesMintedPerChapterId[msg.sender][chapterId] => number of minted passes
@@ -116,8 +116,8 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
         );
     }
 
-    function setMaker(address _maker) external {
-        maker = payable(_maker);
+    function setDirector(address _director) external {
+        director = payable(_director);
     }
 
     /**
@@ -164,7 +164,7 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
     function withdraw() external onlyOwner {
         bool success;
 
-        (success, ) = maker.call{value: address(this).balance}("");
+        (success, ) = director.call{value: address(this).balance}("");
         require(success, "Withdraw unsuccessful");
     }
 

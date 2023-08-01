@@ -2,7 +2,10 @@
   "scripts": {
     "compile": "yarn hardhat compile",
     "demo": "yarn hardhat run scripts/demo.js --network localhost",
-    "demo:cronos-test": "yarn hardhat run scripts/demo-cronos.js --network cronosTestnet"
+    "demo:local": "yarn hardhat run scripts/demo.js --network localhost",
+    "demo:cronos-testnet": "yarn hardhat run scripts/demo.js --network cronosTestnet",
+    "fund-and-vote-chapter:local": "yarn hardhat run scripts/fundAndVoteChapter.js --network localhost",
+    "fund-and-vote-chapter:cronos-testnet": "yarn hardhat run scripts/fundAndVoteChapter.js --network cronosTestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",

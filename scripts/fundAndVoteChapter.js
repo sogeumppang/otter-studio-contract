@@ -2,17 +2,17 @@ const hre = require("hardhat");
 const ethers = hre.ethers;
 
 const getAccounts = async (accounts) => {
-  const maker = "0xc108F2710D17B80989CD1a4320137932D1CFEeFc";
+  const director = "0xc108F2710D17B80989CD1a4320137932D1CFEeFc";
   const owner = accounts[0];
   const buyer = accounts[1];
   console.log(
     `
 owner: ${owner.address}
-maker: ${maker}
+director: ${director}
 buyer: ${buyer.address}\n`
   );
 
-  return { owner, maker, buyer };
+  return { owner, director, buyer };
 };
 
 const deploy = async () => {
@@ -37,15 +37,15 @@ let before;
 async function main() {
   const accounts = await hre.ethers.getSigners();
 
-  const { maker, owner, buyer } = await getAccounts(accounts);
+  const { director, owner, buyer } = await getAccounts(accounts);
   const { dpp, gate } = await deploy();
 
   console.log(
     "\n" + "=".repeat(25) + "Chapter #1 Started" + "=".repeat(25) + "\n"
   );
 
-  await dpp.connect(owner).setMaker(maker);
-  console.log("[DocumentaryProducerPass] #setMaker");
+  await dpp.connect(owner).setDirector(director);
+  console.log("[DocumentaryProducerPass] #setDirector");
 
   const producerPassChapter = {
     price: ethers.parseEther("0.1"),
@@ -102,15 +102,15 @@ async function main() {
   }
 
   before = {
-    maker: await ethers.provider.getBalance(maker),
+    director: await ethers.provider.getBalance(director),
     dpp: await ethers.provider.getBalance(dpp.target),
   };
   await dpp.connect(owner).withdraw();
   console.log("[DocumentaryProducerPass] #withdraw ✅");
   console.log(
     `
-    \tmaker: ${before.maker.toString()} ➡️ ${(
-      await ethers.provider.getBalance(maker)
+    \tdirector: ${before.director.toString()} ➡️ ${(
+      await ethers.provider.getBalance(director)
     ).toString()} (wei)
     \tdpp  : ${before.dpp.toString()} ➡️ ${(
       await ethers.provider.getBalance(dpp.target)
@@ -144,7 +144,7 @@ async function main() {
     gate1155: await dpp.balanceOf(gate.target, 1),
   };
   await dpp.connect(buyer).setApprovalForAll(gate.target, true);
-  await gate.connect(buyer).stakeProducerPass(1, 1, 1);
+  await gate.connect(buyer).stakeProducerPassAndVote(1, 1, 1);
   console.log(`[Gate] #stakeProducerPass ✅`);
   console.log(
     `
@@ -166,7 +166,7 @@ async function main() {
   for (let i = 0; i < accounts.length; i++) {
     if (accounts[i].address === buyer.address) continue;
     await dpp.connect(accounts[i]).setApprovalForAll(gate.target, true);
-    await gate.connect(accounts[i]).stakeProducerPass(1, 1, 1);
+    await gate.connect(accounts[i]).stakeProducerPassAndVote(1, 1, 1);
   }
 
   console.log("\n" + "=".repeat(25) + "(Unstake)" + "=".repeat(25) + "\n");
@@ -250,15 +250,15 @@ async function main() {
   }
 
   before = {
-    maker: await ethers.provider.getBalance(maker),
+    director: await ethers.provider.getBalance(director),
     dpp: await ethers.provider.getBalance(dpp.target),
   };
   await dpp.connect(owner).withdraw();
   console.log("[DocumentaryProducerPass] #withdraw ✅");
   console.log(
     `
-    \tmaker: ${before.maker.toString()} ➡️ ${(
-      await ethers.provider.getBalance(maker)
+    \tdirector: ${before.director.toString()} ➡️ ${(
+      await ethers.provider.getBalance(director)
     ).toString()} (wei)
     \tdpp  : ${before.dpp.toString()} ➡️ ${(
       await ethers.provider.getBalance(dpp.target)
@@ -280,8 +280,8 @@ async function main() {
     gate1155: await dpp.balanceOf(gate.target, 2),
   };
   await dpp.connect(buyer).setApprovalForAll(gate.target, true);
-  await gate.connect(buyer).stakeProducerPass(2, 1, 1);
-  console.log(`[Gate] #stakeProducerPass ✅`);
+  await gate.connect(buyer).stakeProducerPassAndVote(2, 1, 1);
+  console.log(`[Gate] #stakeProducerPassAndVote ✅`);
   console.log(
     `
     \tbuyer: ${before.buyer.toString()} ➡️ ${(
@@ -302,7 +302,7 @@ async function main() {
   for (let i = 0; i < accounts.length; i++) {
     if (accounts[i].address === buyer.address) continue;
     await dpp.connect(accounts[i]).setApprovalForAll(gate.target, true);
-    await gate.connect(accounts[i]).stakeProducerPass(2, 1, 1);
+    await gate.connect(accounts[i]).stakeProducerPassAndVote(2, 1, 1);
   }
 
   console.log("\n" + "=".repeat(25) + "(Voting done)" + "=".repeat(25) + "\n");

@@ -1,51 +1,31 @@
 const hre = require("hardhat");
 const ethers = hre.ethers;
 
-const getAccounts = async (accounts) => {
-  const maker = "0xc108F2710D17B80989CD1a4320137932D1CFEeFc";
-  const owner = accounts[0];
-  const buyer = accounts[1];
-  console.log(
-    `
-owner: ${owner.address}
-maker: ${maker}
-buyer: ${buyer.address}\n`
-  );
-
-  return { owner, maker, buyer };
-};
-
 const deploy = async () => {
   const dppFactory = await ethers.getContractFactory("DocumentaryProducerPass");
-  const dpp = await dppFactory.deploy("http://localhost:3000");
+  const dpp = await dppFactory.attach(
+    "0x221174a1521720D35d5AEA0E7907bb88eb391D28"
+  );
+  // await dpp.waitForDeployment();
   console.log("DocumentaryProducerPass:", dpp.target);
 
   const gateFactory = await ethers.getContractFactory("Gate");
-  const gate = await gateFactory.deploy();
+  const gate = await gateFactory.attach(
+    "0x73a1520558247d745BF2e66eeCf5E1D8be4451c7"
+  );
+  // await gate.waitForDeployment();
   console.log("Gate:", gate.target);
 
   return { dpp, gate };
 };
 
-const tokenContract = async (address) => {
-  const tokenFactory = await ethers.getContractFactory("Token");
-  return tokenFactory.attach(address);
-};
-
-let before;
-
+let tx;
 async function main() {
-  const accounts = await hre.ethers.getSigners();
-
-  const { maker, owner, buyer } = await getAccounts(accounts);
   const { dpp, gate } = await deploy();
 
   console.log(
     "\n" + "=".repeat(25) + "Chapter #1 Started" + "=".repeat(25) + "\n"
   );
-
-  await dpp.connect(owner).setMaker(maker);
-  console.log("[DocumentaryProducerPass] #setMaker");
 
   const producerPassChapter = {
     price: ethers.parseEther("0.1"),
@@ -53,32 +33,37 @@ async function main() {
     maxSupply: 2000, // TODO: 5000 // 500 ETH // Shibuya
     maxPerWallet: 2000,
   };
-  await dpp
-    .connect(owner)
-    .setProducerPass(
-      producerPassChapter.price,
-      producerPassChapter.chapterId,
-      producerPassChapter.maxSupply,
-      producerPassChapter.maxPerWallet
-    );
+  tx = await dpp.setProducerPass(
+    producerPassChapter.price,
+    producerPassChapter.chapterId,
+    producerPassChapter.maxSupply,
+    producerPassChapter.maxPerWallet
+  );
+  await tx.wait();
   console.log("[DocumentaryProducerPass] #setProducerPass");
 
   console.log(
     "\n" + "=".repeat(25) + "(Stake & Voting)" + "=".repeat(25) + "\n"
   );
 
-  await dpp.connect(owner).setApprovalForAll(gate.target, true);
+  tx = await dpp.setApprovalForAll(gate.target, true);
+  await tx.wait();
+  console.log("[DocumentaryProducerPass] #setApprovalForAll");
 
-  await gate.connect(owner).setChapters([1]);
+  tx = await gate.setChapters([1]);
+  tx.wait();
   console.log("[Gate] #setChapters");
 
-  await gate.connect(owner).setChapterOptions(1, [1, 2]);
+  tx = await gate.setChapterOptions(1, [1, 2, 3]);
+  await tx.wait();
   console.log("[Gate] #setChapterOptions");
 
-  await gate.connect(owner).setDocumentaryProducerPass(dpp.target);
+  tx = await gate.setDocumentaryProducerPass(dpp.target);
+  await tx.wait();
   console.log("[Gate] #setDocumentaryProducerPass");
 
-  await gate.connect(owner).setVotingEnabledForChapter(1, true);
+  tx = await gate.setVotingEnabledForChapter(1, true);
+  await tx.wait();
   console.log("[Gate] #setVotingEnabledForChapter");
 }
 
