@@ -3,16 +3,16 @@ task("mint", "Mints producer passes for the given chapter", async (_, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   const dppFactory = await hre.ethers.getContractFactory(
-    "DocumentaryProducerPass"
+    "DocumentaryPassToken"
   );
   const dpp = await dppFactory.attach(
     "0x5FbDB2315678afecb367f032d93F642f64180aa3"
   );
 
-  const tx = await dpp.connect(accounts[0]).mintProducerPass(1, 1, {
+  const tx = await dpp.connect(accounts[0]).mintDocumentaryPass(1, 1, {
     value: ethers.parseEther("0.1"),
   });
-  console.log(`#mintProducerPass(${tx.hash})`);
+  console.log(`#mintDocumentaryPass(${tx.hash})`);
 });
 
 // yarn hardhat vote --network localhost
@@ -24,7 +24,9 @@ task("vote", "Vote", async (taskArgs, hre) => {
     "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
   );
 
-  const tx = await gate.connect(accounts[0]).stakeProducerPassAndVote(1, 1, 1);
+  const tx = await gate
+    .connect(accounts[0])
+    .stakeDocumentaryPassAndVote(1, 1, 1);
   console.log(tx.hash);
 });
 
@@ -37,7 +39,7 @@ task(
     const buyer = accounts[1];
 
     const dppFactory = await hre.ethers.getContractFactory(
-      "DocumentaryProducerPass"
+      "DocumentaryPassToken"
     );
     const dpp = await dppFactory.attach(
       "0x5FbDB2315678afecb367f032d93F642f64180aa3"
@@ -46,10 +48,10 @@ task(
     for (let i = 0; i < accounts.length; i++) {
       if (buyer === accounts[i].address) continue;
 
-      const tx = await dpp.connect(accounts[i]).mintProducerPass(1, 1, {
+      const tx = await dpp.connect(accounts[i]).mintDocumentaryPass(1, 1, {
         value: ethers.parseEther("0.1"),
       });
-      console.log(`#mintProducerPass(${tx.hash}) - ${i}`);
+      console.log(`#mintDocumentaryPass(${tx.hash}) - ${i}`);
     }
   }
 );
@@ -60,7 +62,7 @@ task("vote-all", "Vote", async (taskArgs, hre) => {
   const buyer = accounts[1];
 
   const dppFactory = await hre.ethers.getContractFactory(
-    "DocumentaryProducerPass"
+    "DocumentaryPassToken"
   );
   const dpp = await dppFactory.attach(
     "0x5FbDB2315678afecb367f032d93F642f64180aa3"
@@ -78,8 +80,8 @@ task("vote-all", "Vote", async (taskArgs, hre) => {
 
     const tx = await gate
       .connect(accounts[i])
-      .stakeProducerPassAndVote(1, 1, 1);
-    console.log(`#stakeProducerPassAndVote(${tx.hash}) - ${i}`);
+      .stakeDocumentaryPassAndVote(1, 1, 1);
+    console.log(`#stakeDocumentaryPassAndVote(${tx.hash}) - ${i}`);
   }
 });
 
@@ -88,7 +90,7 @@ task("approve", "Set approval for all", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
 
   const dppFactory = await hre.ethers.getContractFactory(
-    "DocumentaryProducerPass"
+    "DocumentaryPassToken"
   );
   const dpp = await dppFactory.attach(
     "0x5FbDB2315678afecb367f032d93F642f64180aa3"

@@ -8,49 +8,49 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-struct ProducerPass {
+struct DocumentaryPass {
     uint256 price;
     uint256 chapterId;
     uint256 maxSupply;
     uint256 maxPerWallet;
 }
 
-contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
+contract DocumentaryPassToken is ERC1155, ERC1155Supply, Ownable {
     using Strings for uint256;
 
     // Event emitted when a Producer Pass is bought
-    event ProducerPassBought(
+    event DocumentaryPassBought(
         uint256 chapterId,
         address indexed account,
         uint256 amount
     );
 
-    address payable public director;
+    address payable public creator;
 
     // A mapping of the number of Producer Passes minted per chapterId per user
     // userPassesMintedPerChapterId[msg.sender][chapterId] => number of minted passes
     mapping(address => mapping(uint256 => uint256)) private userPassesMintedPerChapterId;
 
     // A mapping from chapterId to its Producer Pass
-    mapping(uint256 => ProducerPass) private chapterToProducerPass;
+    mapping(uint256 => DocumentaryPass) private chapterToDocumentaryPass;
 
     constructor(string memory baseURI) ERC1155(baseURI) {}
 
     /**
      * @dev Retrieves the Producer Pass for a given chapter.
      */
-    function getChapterToProducerPass(uint256 chapterId)
+    function getChapterToDocumentaryPass(uint256 chapterId)
         external
         view
-        returns (ProducerPass memory)
+        returns (DocumentaryPass memory)
     {
-        return chapterToProducerPass[chapterId];
+        return chapterToDocumentaryPass[chapterId];
     }
 
-    function producerPass (
+    function documentaryPass (
         uint256 chapterId
     ) external view returns (uint256, uint256, uint256, uint256) {
-        ProducerPass memory pass = chapterToProducerPass[chapterId];
+        DocumentaryPass memory pass = chapterToDocumentaryPass[chapterId];
         return (pass.price, pass.chapterId, pass.maxSupply, pass.maxPerWallet);
     }
 
@@ -79,7 +79,7 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
         returns (string memory)
     {
         require(
-            chapterToProducerPass[chapterId].chapterId != 0,
+            chapterToDocumentaryPass[chapterId].chapterId != 0,
             "Invalid chapter"
         );
         return
@@ -102,13 +102,13 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
     /**
      * @dev Sets the parameters on the Producer Pass struct for the given chapter.
      */
-    function setProducerPass(
+    function setDocumentaryPass(
         uint256 price,
         uint256 chapterId,
         uint256 maxSupply,
         uint256 maxPerWallet
     ) external onlyOwner {
-        chapterToProducerPass[chapterId] = ProducerPass(
+        chapterToDocumentaryPass[chapterId] = DocumentaryPass(
             price,
             chapterId,
             maxSupply,
@@ -116,14 +116,14 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
         );
     }
 
-    function setDirector(address _director) external {
-        director = payable(_director);
+    function setCreator(address _creator) external {
+        creator = payable(_creator);
     }
 
     /**
      * @dev Mints a set number of Producer Passes for a given chapter.
      *
-     * Emits a `ProducerPassBought` event indicating the Producer Pass was minted successfully.
+     * Emits a `DocumentaryPassBought` event indicating the Producer Pass was minted successfully.
      *
      * Requirements:
      *
@@ -132,11 +132,11 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
      * - The user is not trying to mint more than the maxPerWallet
      * - The user has enough ETH for the transaction
      */
-    function mintProducerPass(uint256 chapterId, uint256 amount)
+    function mintDocumentaryPass(uint256 chapterId, uint256 amount)
         external
         payable
     {
-        ProducerPass memory pass = chapterToProducerPass[chapterId];
+        DocumentaryPass memory pass = chapterToDocumentaryPass[chapterId];
         require(totalSupply(chapterId) < pass.maxSupply, "Sold out");
         require(
             totalSupply(chapterId) + amount <= pass.maxSupply,
@@ -156,15 +156,13 @@ contract DocumentaryProducerPass is ERC1155, ERC1155Supply, Ownable {
             totalMintedPasses +
             amount;
         _mint(msg.sender, chapterId, amount, "");
-        emit ProducerPassBought(chapterId, msg.sender, amount);
-
-        
+        emit DocumentaryPassBought(chapterId, msg.sender, amount);
     }
 
     function withdraw() external onlyOwner {
         bool success;
 
-        (success, ) = director.call{value: address(this).balance}("");
+        (success, ) = creator.call{value: address(this).balance}("");
         require(success, "Withdraw unsuccessful");
     }
 

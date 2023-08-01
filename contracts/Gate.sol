@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "./DocumentaryProducerPass.sol";
+import "./DocumentaryPassToken.sol";
 import "./Token.sol";
 
 import "hardhat/console.sol";
@@ -14,7 +14,7 @@ import "hardhat/console.sol";
 contract Gate is Ownable, ERC1155Holder {
     using Strings for uint256;
 
-    event ProducerPassStaked(
+    event DocumentaryPassStaked(
         address indexed account,
         uint256 chapterId,
         uint256 voteId,
@@ -22,14 +22,14 @@ contract Gate is Ownable, ERC1155Holder {
         uint256 tokenAmount
     );
 
-    event ProducerPassUnstaked(
+    event DocumentaryPassUnstaked(
         address indexed account,
         uint256 chapterId,
         uint256 voteId
     );
 
     // The Producer Pass contract used for staking/voting on chapters
-    DocumentaryProducerPass public documentaryProducerPass;
+    DocumentaryPassToken public documentaryPassToken;
     Token public documentaryToken;
 
     // The list of chapter IDs (e.g. [1, 2, 3, 4])
@@ -61,11 +61,11 @@ contract Gate is Ownable, ERC1155Holder {
     /**
      * @dev Sets the Producer Pass contract to be used
      */
-    function setDocumentaryProducerPass(
-        address _documentaryProducerPassContract
+    function setDocumentaryPassToken(
+        address _documentaryPassTokenContract
     ) external onlyOwner {
-        documentaryProducerPass = DocumentaryProducerPass(
-            _documentaryProducerPassContract
+        documentaryPassToken = DocumentaryPassToken(
+            _documentaryPassTokenContract
         );
     }
 
@@ -108,7 +108,7 @@ contract Gate is Ownable, ERC1155Holder {
         votingEnabledForChapter[chapterId] = enabled;
     }
 
-    function stakeProducerPassAndVote(
+    function stakeDocumentaryPassAndVote(
         uint256 chapterId,
         uint256 voteOptionId,
         uint256 amount
@@ -117,7 +117,7 @@ contract Gate is Ownable, ERC1155Holder {
         require(votingEnabledForChapter[chapterId], "Voting not enabled");
         require(amount > 0, "Cannot stake 0");
         require(
-            documentaryProducerPass.balanceOf(msg.sender, chapterId) >= amount,
+            documentaryPassToken.balanceOf(msg.sender, chapterId) >= amount,
             "Insufficient pass balance"
         );
         uint256[] memory votingOptionsForThisChapter = _chapterOptions[
@@ -142,7 +142,7 @@ contract Gate is Ownable, ERC1155Holder {
         uint256 tokensAllocated = getTokenAllocationForStaking(chapterId, amount);
 
         // Take custody of producer passes from user
-        documentaryProducerPass.safeTransferFrom(
+        documentaryPassToken.safeTransferFrom(
             msg.sender,
             address(this),
             chapterId,
@@ -152,7 +152,7 @@ contract Gate is Ownable, ERC1155Holder {
         // Distribute tokens to user
         documentaryToken.mint(msg.sender, tokensAllocated);
 
-        emit ProducerPassStaked(
+        emit DocumentaryPassStaked(
             msg.sender,
             chapterId,
             voteOptionId,
@@ -161,21 +161,21 @@ contract Gate is Ownable, ERC1155Holder {
         );
     }
 
-    function unstakeProducerPass(uint256 chapterId, uint256 voteOptionId) public {
+    function unstakeDocumentaryPass(uint256 chapterId, uint256 voteOptionId) public {
         require(!votingEnabledForChapter[chapterId], "Voting is still enabled");
-        uint256 stakedProducerPassCount =
+        uint256 stakedDocumentaryPassCount =
             _usersStakedChapterVotingOptionsCount[msg.sender][chapterId][voteOptionId];
-        require(stakedProducerPassCount > 0, "No producer passes staked");
+        require(stakedDocumentaryPassCount > 0, "No producer passes staked");
 
         _usersStakedChapterVotingOptionsCount[msg.sender][chapterId][voteOptionId] = 0;
-        documentaryProducerPass.safeTransferFrom(
+        documentaryPassToken.safeTransferFrom(
             address(this),
             msg.sender,
             chapterId,
-            stakedProducerPassCount,
+            stakedDocumentaryPassCount,
             ""
         );
-        emit ProducerPassUnstaked(
+        emit DocumentaryPassUnstaked(
             msg.sender,
             chapterId,
             voteOptionId
@@ -186,8 +186,8 @@ contract Gate is Ownable, ERC1155Holder {
         uint256 chapterId,
         uint256 amount
     ) public view returns (uint256) {
-        ProducerPass memory pass = documentaryProducerPass
-            .getChapterToProducerPass(chapterId);
+        DocumentaryPass memory pass = documentaryPassToken
+            .getChapterToDocumentaryPass(chapterId);
 
         return 10 * amount;
         // uint256 maxSupply = pass.maxSupply;
