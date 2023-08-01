@@ -1,7 +1,6 @@
 {
   "scripts": {
     "compile": "yarn hardhat compile",
-    "demo": "yarn hardhat run scripts/demo.js --network localhost",
     "demo:local": "yarn hardhat run scripts/demo.js --network localhost",
     "demo:cronos-testnet": "yarn hardhat run scripts/demo.js --network cronosTestnet",
     "fund-and-vote-chapter:local": "yarn hardhat run scripts/fundAndVoteChapter.js --network localhost",
